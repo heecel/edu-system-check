@@ -1,0 +1,36 @@
+.tableRow {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr;
+    align-items: center;
+    padding: 0 50px;
+    height: 101px;
+    background-color: #FEFEFE;
+    border-bottom: 4px solid #323232;
+    box-sizing: border-box;
+    width: 100%;
+    transition: background-color 0.2s;
+  }
+  
+  .tableRow:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .rowCell {
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: #323232;
+    white-space: nowrap;
+  }
+  
+  .rowCell:nth-child(1) {
+    text-align: left;
+  }
+  
+  .rowCell:nth-child(2) {
+    text-align: center;
+  }
+  
+  .rowCell:nth-child(3) {
+    text-align: right;
+  }

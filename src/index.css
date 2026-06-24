@@ -1,0 +1,456 @@
+:root {
+  /* Ваши цвета из Figma */
+  --clear-white: #FEFEFE;
+  --dark-gray: #323232;
+  --light-blue: #8690A2;
+  --white: #EDEDED;
+  --creme: #A99F8D;
+  --black: #000000;
+  --blue-black: #2B2F36;
+
+  /* Семантические переменные (для удобства) */
+  --main-background: var(--clear-white);
+  --secondary-background: var(--white);
+  --text-black: var(--dark-gray);
+  --text-gray: var(--light-blue);
+  --border: var(--creme);
+  /* ... и остальное, если нужно */
+}
+@font-face {
+    font-family: geologica;
+    src: url('./assets/fonts/inter.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Базовый сброс стилей */
+
+* {
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--clear-white);
+    border-radius: 12px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--blue-black);
+}
+
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    vertical-align: baseline;
+    color: inherit;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+    display: block;
+}
+
+html,
+body,
+**#root**{
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    line-height: 1;
+    font-family: var(--font-family-geologica);
+    background-color: var(--secondary-background);
+    color: var(--text-black);
+}
+
+ol,
+ul {
+    list-style: none;
+}
+
+blockquote,
+q {
+    quotes: none;
+}
+
+blockquote::before,
+blockquote::after,
+q::before,
+q::after {
+    content: '';
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    outline: none;
+    border: none;
+
+    &:focus-visible {
+        outline: none;
+    }
+}
+
+svg {
+    flex-shrink: 0;
+}
+
+input,
+textarea,
+select {
+    font: inherit;
+    outline: none;
+}
+
+input[type='search']::-webkit-search-cancel-button {
+    appearance: none;
+}
+
+input[type='search']::-webkit-search-decoration {
+    appearance: none;
+}
+
+input[type='search']::-moz-search-cancel-button {
+    appearance: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ===== ТИПОГРАФИКА ===== */
+
+h1,
+.text-title {
+    /* 20px → 24px */
+    font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.5rem);
+    line-height: normal;
+    font-weight: 500;
+}
+
+h2,
+.text-large {
+    /* 14px → 16px (для подзаголовков и лейблов) */
+    font-size: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
+    line-height: normal;
+    font-weight: 500; /* можно 400, если в макете обычный */
+}
+
+.text-normal {
+    /* 16px — для основного текста (если нужен) */
+    font-size: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
+    line-height: normal;
+    font-weight: 400;
+}
+
+.text-small {
+    /* 11px → 13px (для текста внутри полей) */
+    font-size: clamp(0.6875rem, 0.65rem + 0.2vw, 0.8125rem);
+    line-height: normal;
+    font-weight: 400;
+}
+
+.text-huge {
+    /* 18px → 20px (для кнопки) */
+    font-size: clamp(1.125rem, 1.05rem + 0.4vw, 1.25rem);
+    line-height: normal;
+    font-weight: 500; /* или 600, если в макете жирнее */
+}
+
+/* Остальные классы (h3, .text-label) — можно удалить или оставить для будущего */
+h3 {
+    font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+    line-height: normal;
+    font-weight: 500;
+}
+
+.text-label {
+    font-size: 12px;
+    line-height: normal;
+    font-weight: 400;
+}
+
+/* ===== СТИЛИ ДЛЯ СТРАНИЦЫ ВХОДА ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--secondary-background);
+  font-family: 'Inter';
+}
+
+/* САМА ФОРМА – теперь с размерами, паддингами, тенью */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;       /* центрируем дочерние блоки по горизонтали */
+  width: 436px;
+  height: 473px;
+  padding: 40px;
+  border-radius: 24px;
+  background-color: var(--clear-white);
+  box-shadow: 12px 20px 70px 0 rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;    /* чтобы паддинги не увеличивали размер */
+}
+
+/* Верхний блок (логотип, заголовки) */
+.header-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 10px;
+  margin-bottom: 22px;
+  /* ширина автоматическая – будет центрироваться */
+}
+
+.logo {
+  display: block;
+  filter: drop-shadow(0px 4px 0px var(--light-blue));
+  /* или drop-shadow(0px 4px 0px #8690A2) */
+}
+
+.title {
+  font-family: 'Inter';
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--dark-gray);
+  line-height: 1.2;
+  margin: 0;
+  text-align: center;
+}
+
+.subtitle {
+  font-family: 'Inter';
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--light-blue);
+  margin: 0;
+  text-align: center;
+}
+
+/* Нижний блок (поля и кнопка) */
+.fields-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;   /* выравнивание по левому краю */
+  gap: 30px;
+  padding: 10px 0;
+  width: 356px;              /* 436 - 40*2 = 356 */
+  flex-shrink: 0;            /* чтобы не сжимался */
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+.input-label {
+  font-family: 'Inter';
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-black);
+  margin: 0;
+}
+
+.input-field {
+  width: 100%;
+  height: 44px;
+  padding: 0 10px;
+  border: 2px solid var(--creme);
+  border-radius: 15px;
+  background-color: var(--white);
+  font-family: 'Inter';
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-black);
+  outline: none;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  box-sizing: border-box;
+}
+
+.input-field::placeholder {
+  color: var(--text-black);
+  font-weight: 400;
+  opacity: 1;
+}
+
+.input-field:focus {
+  background-color: var(--dark-gray);
+  border-color: var(--black);
+  color: var(--white);
+}
+
+.input-field:focus::placeholder {
+  color: var(--white);
+}
+
+/* Кнопка с анимацией */
+.login-button {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 50px;
+  background-color: var(--blue-black);
+  color: var(--white);
+  font-family: 'Inter';
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  padding: 0 10px;
+  box-sizing: border-box;
+  transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  /* лёгкая тень для кнопки, чтобы выделить */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Эффект при наведении – чуть увеличиваем и делаем тень больше */
+.login-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Эффект при клике – сжатие */
+.login-button:active {
+  transform: scale(0.96);
+  background-color: #1a1f26; /* чуть темнее */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100vh;
+}

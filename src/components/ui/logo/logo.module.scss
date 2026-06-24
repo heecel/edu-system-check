@@ -1,0 +1,7 @@
+.logo {
+    display: block;
+    width: 39px;
+    height: 39px;
+    filter: drop-shadow(0 4px 0 #8690A2); /* x=0, y=4, blur=0, spread=0, light blue */
+    flex-shrink: 0; /* чтобы не сжимался */
+  }

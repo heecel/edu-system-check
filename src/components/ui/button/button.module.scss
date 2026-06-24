@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.button {
+  /* Размеры */
+  width: 356px;
+  height: 44px;
+  padding: 0 10px;
+  box-sizing: border-box;
+
+  /* Шрифт */
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #EDEDED; /* white-ededed */
+  text-align: center;
+  white-space: nowrap; /* всегда в одну строку */
+
+  /* Геометрия */
+  border: none;
+  border-radius: 50px; /* скругление 50 */
+
+  /* Первое состояние (Default) */
+  background-color: #515968; /* dark blue */
+  box-shadow: 0 10px 30px 0 rgba(81, 89, 104, 0.5); /* x=0, y=10, blur=30, spread=0, цвет dark blue с прозрачностью (0.5) */
+  gap: 10px; /* на всякий случай, если внутри будут элементы */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+
+  /* Второе состояние (Hover) – при наведении */
+  &:hover:not(:disabled) {
+    background-color: #2B2F36; /* blue black */
+    box-shadow: 0 10px 30px 0 rgba(43, 47, 54, 0.5); /* тень с blue black */
+    transform: scale(1.02); /* лёгкое увеличение, как в дизайне */
+  }
+
+  /* Активное состояние (при нажатии) – как Hower, но с сжатием */
+  &:active:not(:disabled) {
+    background-color: #2B2F36;
+    box-shadow: 0 10px 30px 0 rgba(43, 47, 54, 0.5);
+    transform: scale(0.96);
+  }
+
+  /* Отключённое состояние (если нужно) */
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none;
+  }
+
+  /* Фокус (для доступности) */
+  &:focus-visible {
+    outline: 2px solid #515968;
+    outline-offset: 2px;
+  }
+}

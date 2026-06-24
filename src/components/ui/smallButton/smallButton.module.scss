@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.smallButton {
+  /* Размеры */
+  width: 110px;
+  height: 44px;
+  padding: 10px 40px; /* вертикаль 10, горизонталь 40 — чтобы текст поместился */
+  box-sizing: border-box;
+
+  /* Внутреннее выравнивание */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  /* Шрифт */
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600; /* semi bold */
+  color: #323232; /* text black */
+  text-align: center;
+  white-space: nowrap; /* чтобы текст не переносился */
+
+  /* Геометрия */
+  border: 2px solid #A99F8D; /* creme */
+  border-radius: 24px;
+  background-color: #EDEDED; /* white */
+
+  /* Курсор */
+  cursor: pointer;
+
+  /* Переходы для плавности */
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+
+  /* Второе состояние (Hover) */
+  &:hover:not(:disabled) {
+    background-color: #323232; /* dark gray */
+    border-color: #000000; /* black */
+    color: #FEFEFE; /* white */
+  }
+
+  /* Анимация нажатия (Active) */
+  &:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  /* Отключённое состояние */
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* Фокус (для доступности) */
+  &:focus-visible {
+    outline: 2px solid #323232;
+    outline-offset: 2px;
+  }
+}

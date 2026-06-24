@@ -1,0 +1,63 @@
+{
+  "teachers": [
+    {
+      "id": "1",
+      "login": "teacher",
+      "password": "teacher123",
+      "fullName": "Смирнов Алексей Владимирович"
+    }
+  ],
+  "students": [
+    {
+      "id": "1",
+      "login": "student1",
+      "password": "student123",
+      "fullName": "Кузнецов Артём Александрович",
+      "groupId": 1
+    },
+    {
+      "id": "2",
+      "login": "student2",
+      "password": "student123",
+      "fullName": "Петрова Анна Сергеевна",
+      "groupId": 1
+    }
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "name": "ИС-21",
+      "teacherId": 1
+    },
+    {
+      "id": 2,
+      "name": "ИС-22",
+      "teacherId": 1
+    }
+  ],
+  "disciplines": [
+    { "id": 1, "name": "Программирование на Python", "groupId": 1 },
+    { "id": 2, "name": "Информатика", "groupId": 1 },
+    { "id": 3, "name": "Базы данных", "groupId": 1 },
+    { "id": 4, "name": "Веб-разработка", "groupId": 1 },
+    { "id": 5, "name": "Алгоритмы и структуры данных", "groupId": 1 },
+    { "id": 6, "name": "Операционные системы", "groupId": 1 },
+    { "id": 7, "name": "Компьютерные сети", "groupId": 2 },
+    { "id": 8, "name": "Тестирование ПО", "groupId": 2 },
+    { "id": 9, "name": "Математический анализ", "groupId": 2 },
+    { "id": 10, "name": "Линейная алгебра", "groupId": 2 },
+    { "id": 11, "name": "Дискретная математика", "groupId": 2 },
+    { "id": 12, "name": "Теория вероятностей", "groupId": 2 }
+  ],
+  "attendance": [
+    {
+      "id": "1",
+      "studentId": 1,
+      "disciplineId": 1,
+      "date": "2026-06-02",
+      "status": "П",
+      "reason": ""
+    }
+  ],
+  "polls": []
+}

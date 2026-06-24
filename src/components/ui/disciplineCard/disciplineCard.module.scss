@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 418px;
+  min-height: 220px;
+  padding: 20px;
+  border-radius: 20px;
+  background-color: #8690A2;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    background-color: #515968;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.infoBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 378px;
+  padding: 0;
+  margin-bottom: 10px; /* добавить отступ снизу */
+  box-sizing: border-box;
+}
+.disciplineName {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px; /* уменьшил с 32px до 28px, чтобы длинные названия влезали */
+  font-weight: 700;
+  color: #FEFEFE;
+  text-align: center;
+  margin: 0;
+  white-space: nowrap; /* запрещаем перенос на новую строку */
+  overflow: hidden;
+  text-overflow: ellipsis; /* если не влезает, ставим многоточие */
+  max-width: 100%;
+  padding: 0 5px;
+}
+
+.absencesCount {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: #FEFEFE;
+  text-align: center;
+  margin: 0;
+}
+
+.attendanceButton {
+  width: 378px;
+  height: 41px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #323232;
+  text-align: center;
+  white-space: nowrap;
+  border: 2px solid #A99F8D;
+  border-radius: 24px;
+  background-color: #EDEDED;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    background-color: #323232;
+    border-color: #000000;
+    color: #FEFEFE;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #323232;
+    outline-offset: 2px;
+  }
+}
+.attendanceButton {
+  width: 378px;
+  height: 41px;
+  padding: 0 10px;
+  margin-top: 10px; /* добавить отступ сверху */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #323232;
+  text-align: center;
+  white-space: nowrap;
+  border: 2px solid #A99F8D;
+  border-radius: 24px;
+  background-color: #EDEDED;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    background-color: #323232;
+    border-color: #000000;
+    color: #FEFEFE;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #323232;
+    outline-offset: 2px;
+  }
+}
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #EDEDED;
+}
+
+.content {
+  flex: 1;
+  padding: 50px 10px 50px 50px;
+  max-width: 1800px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.titleBlock {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  width: 100%;
+}
+
+.title {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #323232;
+  text-align: left;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Сетка для карточек — 4 колонки */
+.disciplinesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 418px); /* 4 колонки по 418px */
+  gap: 30px;
+  justify-items: start;
+  width: 100%;
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 1800px) {
+  .disciplinesGrid {
+    grid-template-columns: repeat(3, 418px);
+  }
+}
+
+@media (max-width: 1350px) {
+  .disciplinesGrid {
+    grid-template-columns: repeat(2, 418px);
+  }
+}
+
+@media (max-width: 900px) {
+  .disciplinesGrid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+.loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  color: #8690A2;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.error {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  color: #ff4444;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.noData {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  color: #8690A2;
+  text-align: center;
+  margin-top: 40px;
+}

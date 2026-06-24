@@ -1,0 +1,52 @@
+.inputBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 0;
+    width: 356px;
+    height: 69px;
+    box-sizing: border-box;
+  }
+  
+  .label {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #323232; /* text-black */
+    text-align: left;
+    margin: 0;
+  }
+  
+  .inputField {
+    width: 356px;
+    height: 44px;
+    padding: 10px;
+    border: 2px solid #A99F8D; /* creme */
+    border-radius: 15px;
+    background-color: #EDEDED; /* white */
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #323232; /* text-black */
+    text-align: left;
+    box-sizing: border-box;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    outline: none;
+  
+    &::placeholder {
+      color: #323232; /* text-black */
+      font-weight: 400;
+      opacity: 1;
+    }
+  
+    &:focus {
+      background-color: #323232; /* dark gray */
+      border-color: #000000; /* black */
+      color: #FEFEFE; /* white */
+  
+      &::placeholder {
+        color: #FEFEFE; /* white */
+      }
+    }
+  }

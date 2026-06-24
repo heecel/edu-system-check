@@ -1,0 +1,200 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* вся высота экрана */
+  background-color: #EDEDED;
+  overflow: hidden; /* скрываем прокрутку страницы */
+}
+
+/* Шапка — фиксированная */
+.headerWrapper {
+  flex-shrink: 0; /* не сжимается */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #323232;
+}
+
+/* Контент — занимает оставшееся место */
+.pageContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* прокрутка всей страницы */
+  padding-bottom: 40px;
+}
+
+.content {
+  padding: 50px 10px 50px 50px;
+  max-width: 1400px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.backBlock {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  width: 100%;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #323232;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s, transform 0.2s;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #515968;
+    transition: width 0.3s ease;
+  }
+
+  &:hover {
+    color: #515968;
+    transform: translateX(-4px);
+
+    &::after {
+      width: 100%;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.backArrow {
+  font-size: 28px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.backButton:hover .backArrow {
+  transform: translateX(-4px);
+}
+
+.titleBlock {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  width: 100%;
+}
+
+.title {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #323232;
+  text-align: left;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ========== ТАБЛИЦА ========== */
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #8690A2;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr;
+  align-items: center;
+  padding: 0 50px;
+  height: 101px;
+  background-color: #8690A2;
+  border-bottom: 4px solid #323232;
+  box-sizing: border-box;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.headerCell {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #323232;
+  white-space: nowrap;
+}
+
+.headerCell:nth-child(1) {
+  text-align: left;
+}
+
+.headerCell:nth-child(2) {
+  text-align: center;
+}
+
+.headerCell:nth-child(3) {
+  text-align: right;
+}
+
+/* Тело таблицы — прокручивается */
+.tableBodyWrapper {
+  background-color: #FEFEFE;
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 600px; /* фиксированная высота для прокрутки */
+  overflow-y: auto; /* прокрутка только таблицы */
+}
+
+/* Стилизация скроллбара */
+.tableBodyWrapper::-webkit-scrollbar {
+  width: 12px;
+}
+
+.tableBodyWrapper::-webkit-scrollbar-track {
+  background: #EDEDED;
+  border-left: 1px solid #A99F8D;
+}
+
+.tableBodyWrapper::-webkit-scrollbar-thumb {
+  background: #8690A2;
+  border-radius: 6px;
+  border: 2px solid #EDEDED;
+  transition: background 0.3s;
+}
+
+.tableBodyWrapper::-webkit-scrollbar-thumb:hover {
+  background: #515968;
+}
+
+.tableBodyWrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #8690A2 #EDEDED;
+}
+
+.noData {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  color: #323232;
+  text-align: center;
+  margin: 0;
+  padding: 40px 0;
+}
