@@ -1,26 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../ui/layout/header/header';
 import { DisciplineCard } from '../../ui/disciplineCard/disciplineCard';
+import PollModal from '../../ui/pollModal/pollModal';
 import { getUser, logout } from '../../../utils/auth';
 import { getDisciplinesForStudent, type Discipline } from '../../../services/disciplinesService';
 import styles from './mainStudent.module.scss';
-
-// Объект с фиксированными пропусками для каждой дисциплины (по id)
-const absencesMap: Record<number, number> = {
-  1: 2,  // Программирование на Python - 2 пропуска
-  2: 1,  // Информатика - 1 пропуск
-  3: 3,  // Базы данных - 3 пропуска
-  4: 0,  // Веб-разработка - 0 пропусков
-  5: 4,  // Алгоритмы и структуры данных - 4 пропуска
-  6: 1,  // Операционные системы - 1 пропуск
-  7: 5,  // Компьютерные сети - 5 пропусков
-  8: 2,  // Тестирование ПО - 2 пропуска
-  9: 3,  // Математический анализ - 3 пропуска
-  10: 0, // Линейная алгебра - 0 пропусков
-  11: 1, // Дискретная математика - 1 пропуск
-  12: 4  // Теория вероятностей - 4 пропуска
-};
 
 export const MainStudent = () => {
   const navigate = useNavigate();
@@ -28,33 +13,192 @@ export const MainStudent = () => {
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [absencesMap, setAbsencesMap] = useState<Record<number, number>>({});
+  
+  // Флаг для предотвращения двойных запросов в StrictMode
+  const isFetchingRef = useRef<boolean>(false);
+
+  // ===== СОСТОЯНИЯ ДЛЯ ОПРОСА =====
+  const [isPollOpen, setIsPollOpen] = useState<boolean>(false);
+  const [activePoll, setActivePoll] = useState<any>(null);
+  const [hasConfirmed, setHasConfirmed] = useState<boolean>(false);
+  const pollShownRef = useRef<boolean>(false);
+  const lastPollIdRef = useRef<string | null>(null);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  // ===== ЗАГРУЗКА ДИСЦИПЛИН И ПРОПУСКОВ =====
   useEffect(() => {
-    const fetchDisciplines = async () => {
+    const fetchData = async () => {
+      // Предотвращаем двойные запросы
+      if (isFetchingRef.current) return;
       if (!user || !user.groupId) {
         setError('Ошибка: группа студента не найдена');
         setLoading(false);
         return;
       }
 
+      isFetchingRef.current = true;
+      setError(''); // Очищаем ошибку перед загрузкой
+
       try {
-        const data = await getDisciplinesForStudent(user.groupId);
-        setDisciplines(data);
-      } catch {
-        setError('Не удалось загрузить дисциплины');
+        console.log('👤 Текущий пользователь:', user);
+        console.log('📚 Загружаем дисциплины для группы:', user.groupId);
+
+        // 1. Загружаем дисциплины студента
+        const disciplinesData = await getDisciplinesForStudent(user.groupId);
+        setDisciplines(disciplinesData);
+        console.log('📚 Дисциплины:', disciplinesData);
+
+        // 2. Загружаем ВСЮ посещаемость
+        console.log('🔄 Загружаем все записи посещаемости...');
+        const attendanceRes = await fetch('/api/attendance');
+        
+        if (!attendanceRes.ok) {
+          console.error('❌ Ошибка загрузки attendance:', attendanceRes.status);
+          setError('Не удалось загрузить данные посещаемости');
+          setLoading(false);
+          isFetchingRef.current = false;
+          return;
+        }
+
+        const allAttendance = await attendanceRes.json();
+        console.log('📋 Все записи посещаемости (всего):', allAttendance.length);
+        console.log('📋 Пример записи:', allAttendance[0]);
+
+        // 3. Фильтруем записи ТОЛЬКО для этого студента
+        const studentAttendance = allAttendance.filter((record: any) => {
+          return String(record.studentId) === String(user.id);
+        });
+
+        console.log(`📋 Записей для студента ${user.id}:`, studentAttendance.length);
+
+        // 4. Считаем пропуски для каждой дисциплины
+        const absences: Record<number, number> = {};
+        
+        disciplinesData.forEach(discipline => {
+          const absencesCount = studentAttendance.filter((record: any) => {
+            return String(record.disciplineId) === String(discipline.id) && 
+                   (record.status === 'Н' || record.status === 'У');
+          }).length;
+          
+          console.log(`📊 Дисциплина ${discipline.id} (${discipline.name}): ${absencesCount} пропусков`);
+          absences[discipline.id] = absencesCount;
+        });
+        
+        setAbsencesMap(absences);
+        setError('');
+
+      } catch (error) {
+        console.error('❌ Критическая ошибка:', error);
+        setError('Не удалось загрузить данные');
       } finally {
         setLoading(false);
+        isFetchingRef.current = false;
       }
     };
 
-    fetchDisciplines();
-  }, [user]);
+    fetchData();
+  }, [user]); // Убираем лишние зависимости, оставляем только user
 
+  // ===== ПРОВЕРКА АКТИВНОГО ОПРОСА =====
+  useEffect(() => {
+    const checkPoll = async () => {
+      if (!user || !user.groupId) return;
+      if (hasConfirmed) return;
+
+      try {
+        const response = await fetch(`/api/polls?groupId=${user.groupId}&active=true`);
+        if (!response.ok) return;
+        
+        const polls = await response.json();
+        
+        if (polls.length > 0) {
+          const poll = polls[0];
+          const now = new Date();
+          const expires = new Date(poll.expiresAt);
+          
+          if (now < expires) {
+            if (lastPollIdRef.current !== poll.id && !pollShownRef.current) {
+              lastPollIdRef.current = poll.id;
+              pollShownRef.current = true;
+              setActivePoll(poll);
+              setIsPollOpen(true);
+            }
+          } else {
+            await fetch(`/api/polls/${poll.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ active: false }),
+            });
+            if (lastPollIdRef.current === poll.id) {
+              setIsPollOpen(false);
+              setActivePoll(null);
+              pollShownRef.current = false;
+              lastPollIdRef.current = null;
+            }
+          }
+        } else {
+          setIsPollOpen(false);
+          setActivePoll(null);
+          pollShownRef.current = false;
+          lastPollIdRef.current = null;
+        }
+      } catch (error) {
+        console.error('Ошибка проверки опроса:', error);
+      }
+    };
+
+    const interval = setInterval(checkPoll, 5000);
+    checkPoll();
+
+    return () => clearInterval(interval);
+  }, [user, hasConfirmed]);
+
+  // ===== ПОДТВЕРЖДЕНИЕ ОПРОСА =====
+  const handlePollSubmit = async (data: { disciplineId: number; date: string }) => {
+    console.log('✅ Подтверждение опроса:', data);
+    
+    try {
+      if (!user) return;
+
+      await fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: parseInt(user.id),
+          disciplineId: data.disciplineId,
+          date: data.date,
+          status: 'П',
+          reason: '',
+        }),
+      });
+      console.log('✅ Отметка о присутствии сохранена!');
+
+      setHasConfirmed(true);
+
+    } catch (error) {
+      console.error('Ошибка подтверждения опроса:', error);
+    }
+
+    setIsPollOpen(false);
+    setActivePoll(null);
+    pollShownRef.current = false;
+    lastPollIdRef.current = null;
+  };
+
+  // ===== ЗАКРЫТИЕ МОДАЛКИ =====
+  const handlePollClose = () => {
+    setIsPollOpen(false);
+    setActivePoll(null);
+    pollShownRef.current = false;
+    lastPollIdRef.current = null;
+  };
+
+  // ===== ЗАГРУЗКА =====
   if (loading) {
     return (
       <div className={styles.page}>
@@ -66,7 +210,8 @@ export const MainStudent = () => {
     );
   }
 
-  if (error) {
+  // Показываем ошибку только если она есть и не в процессе загрузки
+  if (error && !loading) {
     return (
       <div className={styles.page}>
         <Header userName={user?.fullName || 'Студент'} onLogout={handleLogout} />
@@ -103,6 +248,17 @@ export const MainStudent = () => {
           </div>
         )}
       </div>
+
+      {/* ===== МОДАЛЬНОЕ ОКНО ОПРОСА ===== */}
+      <PollModal
+        isOpen={isPollOpen}
+        onClose={handlePollClose}
+        userName={user?.fullName || 'Студент'}
+        disciplineName={activePoll?.disciplineName || ''}
+        disciplineId={activePoll?.disciplineId || 0}
+        date={activePoll?.date || ''}
+        onSubmit={handlePollSubmit}
+      />
     </div>
   );
 };
