@@ -506,78 +506,6 @@
       "id": "R4iYPYZPyVQ"
     },
     {
-      "studentId": "1",
-      "disciplineId": "1",
-      "date": "2026-06-24",
-      "status": "Н",
-      "reason": "прогулял",
-      "id": "yONrO9_1pHM"
-    },
-    {
-      "studentId": "2",
-      "disciplineId": "1",
-      "date": "2026-06-24",
-      "status": "Н",
-      "reason": "прогуууул",
-      "id": "3Ac4_GkX3lY"
-    },
-    {
-      "studentId": "3",
-      "disciplineId": "1",
-      "date": "2026-06-24",
-      "status": "Н",
-      "reason": "прогул",
-      "id": "84YhQgCFV-4"
-    },
-    {
-      "studentId": "1",
-      "disciplineId": "1",
-      "date": "2026-06-23",
-      "status": "Н",
-      "reason": "",
-      "id": "IgKjexK3Y-I"
-    },
-    {
-      "studentId": "2",
-      "disciplineId": "1",
-      "date": "2026-06-23",
-      "status": "Н",
-      "reason": "",
-      "id": "Zi0SbqTiPbE"
-    },
-    {
-      "studentId": "1",
-      "disciplineId": "1",
-      "date": "2026-06-22",
-      "status": "Н",
-      "reason": "",
-      "id": "ZVQqok6mY-4"
-    },
-    {
-      "studentId": "2",
-      "disciplineId": "1",
-      "date": "2026-06-22",
-      "status": "Н",
-      "reason": "",
-      "id": "hQIuJKhySKg"
-    },
-    {
-      "studentId": "1",
-      "disciplineId": "1",
-      "date": "2026-06-21",
-      "status": "Н",
-      "reason": "",
-      "id": "baji_jGNo2E"
-    },
-    {
-      "studentId": "2",
-      "disciplineId": "1",
-      "date": "2026-06-21",
-      "status": "Н",
-      "reason": "",
-      "id": "BkMx0WEV_L4"
-    },
-    {
       "studentId": 1,
       "disciplineId": 5,
       "date": "2026-06-24",
@@ -592,6 +520,334 @@
       "status": "П",
       "reason": "",
       "id": "pdemRwWZrr0"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "3",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "_q-sqjGlyn4"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "6",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "kBVJ76CZsME"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-05-31",
+      "status": "Н",
+      "reason": " ",
+      "id": "UmAvXmLiVeA"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-05-31",
+      "status": "Н",
+      "reason": " ",
+      "id": "-NxWXSLEeZ8"
+    },
+    {
+      "studentId": "3",
+      "disciplineId": "1",
+      "date": "2026-05-31",
+      "status": "Н",
+      "reason": " ",
+      "id": "p1M7fwjti88"
+    },
+    {
+      "studentId": "5",
+      "disciplineId": "1",
+      "date": "2026-05-31",
+      "status": "П",
+      "reason": "",
+      "id": "6X_9TWoL4A0"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-01",
+      "status": "П",
+      "reason": "",
+      "id": "Li6lmMYMKVk"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-01",
+      "status": "У",
+      "reason": " ",
+      "id": "sFw8q9rIF50"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-02",
+      "status": "Н",
+      "reason": " ",
+      "id": "Jov2CMpOjfE"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-02",
+      "status": "Н",
+      "reason": " ",
+      "id": "o6MhgOTDov8"
+    },
+    {
+      "studentId": "5",
+      "disciplineId": "1",
+      "date": "2026-06-02",
+      "status": "П",
+      "reason": "",
+      "id": "hb1tQaioFLg"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-03",
+      "status": "У",
+      "reason": " ",
+      "id": "QMJLLb9DMF0"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-04",
+      "status": "П",
+      "reason": "",
+      "id": "hjKGHaX-QNk"
+    },
+    {
+      "studentId": "3",
+      "disciplineId": "1",
+      "date": "2026-06-04",
+      "status": "П",
+      "reason": "",
+      "id": "zYnt88tPaJc"
+    },
+    {
+      "studentId": "6",
+      "disciplineId": "1",
+      "date": "2026-06-04",
+      "status": "П",
+      "reason": "",
+      "id": "quLOhv7dizE"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-05",
+      "status": "П",
+      "reason": "",
+      "id": "3V003VBwITo"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-06",
+      "status": "П",
+      "reason": "",
+      "id": "yjkOfPr6t94"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-07",
+      "status": "П",
+      "reason": "",
+      "id": "sdU1jshxnd4"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-15",
+      "status": "Н",
+      "reason": " ",
+      "id": "qHASAlvwKqg"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-21",
+      "status": "Н",
+      "reason": " ",
+      "id": "KzRkxUBph0s"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-21",
+      "status": "Н",
+      "reason": " ",
+      "id": "ihcYXmWhoLA"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-22",
+      "status": "Н",
+      "reason": " ",
+      "id": "-RHSwTzcjZA"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-22",
+      "status": "Н",
+      "reason": " ",
+      "id": "__s3zYFFSxo"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-23",
+      "status": "Н",
+      "reason": " ",
+      "id": "6AOZtdhlYVs"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-23",
+      "status": "Н",
+      "reason": " ",
+      "id": "6WMum-dlS7g"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "Н",
+      "reason": " ",
+      "id": "4vVZjJe9Fs0"
+    },
+    {
+      "studentId": "3",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "У",
+      "reason": " ",
+      "id": "OrKjqYEtY0E"
+    },
+    {
+      "studentId": "4",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "CpEiUv6PXXM"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-25",
+      "status": "П",
+      "reason": "",
+      "id": "syidjJkD03E"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-25",
+      "status": "У",
+      "reason": " ",
+      "id": "e_eoHtHECcg"
+    },
+    {
+      "studentId": "3",
+      "disciplineId": "1",
+      "date": "2026-06-25",
+      "status": "Н",
+      "reason": " ",
+      "id": "Pqxpz3MVU5w"
+    },
+    {
+      "studentId": "4",
+      "disciplineId": "1",
+      "date": "2026-06-25",
+      "status": "П",
+      "reason": "",
+      "id": "1vsxhI48kts"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-26",
+      "status": "П",
+      "reason": "",
+      "id": "1PL9zLzT1Kc"
+    },
+    {
+      "studentId": "1",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "Н",
+      "reason": " прогул",
+      "id": "qpHCEo2l-Js"
+    },
+    {
+      "studentId": "2",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "Н",
+      "reason": " ",
+      "id": "PsIB4yLbvGg"
+    },
+    {
+      "studentId": "3",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "У",
+      "reason": " болел",
+      "id": "0TusHTD7xnI"
+    },
+    {
+      "studentId": "4",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "1YUaZ4udGEs"
+    },
+    {
+      "studentId": "5",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "iVFduI8iUQA"
+    },
+    {
+      "studentId": "6",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "HgLGHPzL85M"
+    },
+    {
+      "studentId": "7",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "seBoNERnStk"
+    },
+    {
+      "studentId": "8",
+      "disciplineId": "1",
+      "date": "2026-06-24",
+      "status": "П",
+      "reason": "",
+      "id": "J0_Xt4LhAt8"
     }
   ],
   "polls": [
@@ -652,6 +908,28 @@
       "expiresAt": "2026-06-24T14:37:25.579Z",
       "active": false,
       "id": "enP2aPyuqQM"
+    },
+    {
+      "disciplineId": 1,
+      "disciplineName": "Программирование на Python",
+      "teacherId": 1,
+      "groupId": 1,
+      "date": "2026-06-26",
+      "startedAt": "2026-06-24T17:59:38.762Z",
+      "expiresAt": "2026-06-24T18:09:38.762Z",
+      "active": false,
+      "id": "rcvJ5JdKLR0"
+    },
+    {
+      "disciplineId": 1,
+      "disciplineName": "Программирование на Python",
+      "teacherId": 1,
+      "groupId": 1,
+      "date": "2026-06-24",
+      "startedAt": "2026-06-24T20:10:49.581Z",
+      "expiresAt": "2026-06-24T20:20:49.581Z",
+      "active": true,
+      "id": "1dc9wZXJGHs"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -1,3 +1,4 @@
+import { generateDailyReport, generateWeeklyReport, generateMonthlyReport } from '../../../services/reportService';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
@@ -18,6 +19,27 @@ interface AttendanceRow {
   fullName: string;
   mark: string;
   reason: string;
+}
+
+interface WeeklyAttendanceRow {
+  studentId: string;
+  fullName: string;
+  marks: {
+    mon: string;
+    tue: string;
+    wed: string;
+    thu: string;
+    fri: string;
+    sat: string;
+  };
+  total: number;
+}
+
+interface MonthlyAttendanceRow {
+  studentId: string;
+  fullName: string;
+  marks: Record<number, string>;
+  total: number;
 }
 
 interface Discipline {
@@ -125,11 +147,13 @@ export const TeacherGroups = () => {
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>('');
   const [selectedDisciplineId, setSelectedDisciplineId] = useState<string>('');
   const [attendanceRows, setAttendanceRows] = useState<AttendanceRow[]>([]);
+  const [weeklyAttendanceRows, setWeeklyAttendanceRows] = useState<WeeklyAttendanceRow[]>([]);
+  const [monthlyAttendanceRows, setMonthlyAttendanceRows] = useState<MonthlyAttendanceRow[]>([]);
   const [saveMessage, setSaveMessage] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Дни недели для шапки
-  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const weekKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Всего'];
 
   // ===== НАВИГАЦИЯ =====
   const handleLogout = () => {
@@ -141,11 +165,75 @@ export const TeacherGroups = () => {
     navigate('/teacher');
   };
 
-  const handleDownloadReport = () => {
-    console.log('Скачать отчет Word');
-  };
+  const handleDownloadReport = async () => {
+  if (!groupId || !selectedDisciplineId || !startDate) {
+    setSaveMessage('⚠️ Выберите дату и дисциплину перед скачиванием');
+    setTimeout(() => setSaveMessage(''), 3000);
+    return;
+  }
 
-  // ===== ЗАПУСК ОПРОСА ПРИСУТСТВИЯ =====
+  setSaveMessage('⏳ Формируем отчёт...');
+
+  try {
+    // 1. Загружаем студентов группы
+    const studentsRes = await fetch(`/api/students?groupId=${groupId}`);
+    const studentsData: { id: string; fullName: string }[] = await studentsRes.json();
+
+    // 2. Загружаем ВСЮ посещаемость и строим словарь { studentId -> { date -> mark } }
+    const attendanceRes = await fetch('/api/attendance');
+    const allAttendance: any[] = await attendanceRes.json();
+
+    const recordsMap: Record<string, Record<string, string>> = {};
+    const reasonMap:  Record<string, string> = {};
+
+    for (const item of allAttendance) {
+      const sid = String(item.studentId);
+      if (!recordsMap[sid]) recordsMap[sid] = {};
+      recordsMap[sid][item.date] = item.status;
+      if (item.reason && (item.status === 'Н' || item.status === 'У')) {
+        reasonMap[sid] = item.reason;
+      }
+    }
+
+    // 3. Загружаем дисциплины группы (нужны для ежедневного отчёта)
+    const discRes = await fetch(`/api/disciplines?groupId=${groupId}`);
+    const disciplines: { id: string; name: string }[] = await discRes.json();
+
+    // 4. Формируем массив StudentAttendance
+    const studentAttendance = studentsData.map(s => ({
+      studentId: s.id,
+      fullName:  s.fullName,
+      records:   recordsMap[s.id] || {},
+      reason:    reasonMap[s.id]  || '',
+    }));
+
+    // 5. Генерируем нужный отчёт
+    if (selectedPeriod === 'daily') {
+      await generateDailyReport(groupName, startDate, studentAttendance, disciplines);
+    } else if (selectedPeriod === 'weekly') {
+      // Неделя: от понедельника до воскресенья выбранной даты
+      const monday = new Date(startDate);
+      monday.setDate(startDate.getDate() - ((startDate.getDay() + 6) % 7));
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      await generateWeeklyReport(groupName, monday, sunday, studentAttendance);
+    } else {
+      // Месяц
+      await generateMonthlyReport(groupName, startDate, studentAttendance);
+    }
+
+    setSaveMessage('✅ Отчёт скачан!');
+    setTimeout(() => setSaveMessage(''), 3000);
+
+  } catch (error) {
+    console.error('Ошибка генерации отчёта:', error);
+    setSaveMessage('❌ Ошибка при формировании отчёта');
+    setTimeout(() => setSaveMessage(''), 3000);
+  }
+};
+
+
+  // ===== ЗАПУСК ОПРОСА =====
   const handleStartPoll = async () => {
     if (!selectedDisciplineId) {
       setSaveMessage('⚠️ Выберите дисциплину');
@@ -224,7 +312,7 @@ export const TeacherGroups = () => {
     }
   };
 
-  // ===== ИЗМЕНЕНИЕ ОТМЕТКИ =====
+  // ===== ИЗМЕНЕНИЕ ОТМЕТОК =====
   const handleMarkChange = (studentId: string, value: string) => {
     setAttendanceRows(prev =>
       prev.map(row =>
@@ -235,12 +323,37 @@ export const TeacherGroups = () => {
     );
   };
 
-  // ===== ИЗМЕНЕНИЕ ПРИЧИНЫ =====
   const handleReasonChange = (studentId: string, value: string) => {
     setAttendanceRows(prev =>
       prev.map(row =>
         row.studentId === studentId ? { ...row, reason: value } : row
       )
+    );
+  };
+
+  const handleWeeklyMarkChange = (studentId: string, dayKey: string, value: string) => {
+    setWeeklyAttendanceRows(prev =>
+      prev.map(row => {
+        if (row.studentId === studentId) {
+          const newMarks = { ...row.marks, [dayKey]: value };
+          const total = Object.values(newMarks).filter(v => v === 'Н' || v === 'У').length;
+          return { ...row, marks: newMarks, total };
+        }
+        return row;
+      })
+    );
+  };
+
+  const handleMonthlyMarkChange = (studentId: string, day: number, value: string) => {
+    setMonthlyAttendanceRows(prev =>
+      prev.map(row => {
+        if (row.studentId === studentId) {
+          const newMarks = { ...row.marks, [day]: value };
+          const total = Object.values(newMarks).filter(v => v === 'Н' || v === 'У').length;
+          return { ...row, marks: newMarks, total };
+        }
+        return row;
+      })
     );
   };
 
@@ -268,12 +381,20 @@ export const TeacherGroups = () => {
       const attendanceRes = await fetch(`/api/attendance`);
       const allAttendance = await attendanceRes.json();
 
-      const filteredAttendance = allAttendance.filter((item: any) =>
-        String(item.disciplineId) === String(selectedDisciplineId) &&
-        String(item.date) === dateStr
-      );
+      // ЕЖЕДНЕВНАЯ - фильтрация по дате и дисциплине
+      const filteredAttendance = allAttendance.filter((item: any) => {
+        const itemDate = item.date;
+        const isMatch = String(item.disciplineId) === String(selectedDisciplineId) && 
+                        String(itemDate) === dateStr;
+        if (isMatch) {
+          console.log('✅ Найдена запись:', item);
+        }
+        return isMatch;
+      });
 
-      const rows: AttendanceRow[] = studentsData.map(student => {
+      console.log(`📋 Найдено записей для ежедневной: ${filteredAttendance.length}`);
+
+      const dailyRows: AttendanceRow[] = studentsData.map(student => {
         const found = filteredAttendance.find(
           (item: any) => String(item.studentId) === String(student.id)
         );
@@ -284,15 +405,104 @@ export const TeacherGroups = () => {
           reason: found && found.reason ? found.reason : '-',
         };
       });
+      setAttendanceRows(dailyRows);
 
-      setAttendanceRows(rows);
+      // ЕЖЕНЕДЕЛЬНАЯ
+      const selectedDate = new Date(startDate);
+      const dayOfWeek = selectedDate.getDay();
+      const diffToMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+      const monday = new Date(selectedDate);
+      monday.setDate(selectedDate.getDate() - diffToMonday);
+
+      const weekDates: Date[] = [];
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        weekDates.push(d);
+      }
+
+      const weeklyRows: WeeklyAttendanceRow[] = studentsData.map(student => {
+        const marks = {
+          mon: '-',
+          tue: '-',
+          wed: '-',
+          thu: '-',
+          fri: '-',
+          sat: '-',
+        };
+        let total = 0;
+
+        weekKeys.forEach((key, index) => {
+          const dateStrWeek = weekDates[index].toISOString().split('T')[0];
+          
+          const found = allAttendance.find((item: any) =>
+            String(item.disciplineId) === String(selectedDisciplineId) &&
+            String(item.studentId) === String(student.id) &&
+            String(item.date) === dateStrWeek
+          );
+          
+          if (found) {
+            marks[key as keyof typeof marks] = found.status || '-';
+            if (found.status === 'Н' || found.status === 'У') {
+              total++;
+            }
+          }
+        });
+
+        return {
+          studentId: student.id,
+          fullName: student.fullName,
+          marks,
+          total,
+        };
+      });
+      setWeeklyAttendanceRows(weeklyRows);
+
+      // ЕЖЕМЕСЯЧНАЯ
+      const currentMonth = startDate.getMonth();
+      const currentYear = startDate.getFullYear();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      const monthlyRows: MonthlyAttendanceRow[] = studentsData.map(student => {
+        const marks: Record<number, string> = {};
+        let total = 0;
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dateObj = new Date(currentYear, currentMonth, d);
+          const dateStrMonth = dateObj.toISOString().split('T')[0];
+          
+          const found = allAttendance.find((item: any) =>
+            String(item.disciplineId) === String(selectedDisciplineId) &&
+            String(item.studentId) === String(student.id) &&
+            String(item.date) === dateStrMonth
+          );
+          
+          if (found) {
+            marks[d] = found.status || '-';
+            if (found.status === 'Н' || found.status === 'У') {
+              total++;
+            }
+          } else {
+            marks[d] = '-';
+          }
+        }
+
+        return {
+          studentId: student.id,
+          fullName: student.fullName,
+          marks,
+          total,
+        };
+      });
+      setMonthlyAttendanceRows(monthlyRows);
+
     } catch (error) {
       console.error('❌ Ошибка загрузки данных:', error);
     }
   }, [groupId, selectedDisciplineId, startDate]);
 
-  // ===== СОХРАНЕНИЕ =====
-  const handleSave = async () => {
+  // ===== СОХРАНЕНИЯ =====
+  const handleSaveDaily = async () => {
     if (!selectedDisciplineId) {
       setSaveMessage('⚠️ Выберите дисциплину');
       setTimeout(() => setSaveMessage(''), 3000);
@@ -358,6 +568,177 @@ export const TeacherGroups = () => {
     }
   };
 
+  const handleSaveWeekly = async () => {
+    if (!selectedDisciplineId) {
+      setSaveMessage('⚠️ Выберите дисциплину');
+      setTimeout(() => setSaveMessage(''), 3000);
+      return;
+    }
+    if (!startDate) {
+      setSaveMessage('⚠️ Выберите дату');
+      setTimeout(() => setSaveMessage(''), 3000);
+      return;
+    }
+
+    setLoading(true);
+    setSaveMessage('⏳ Сохранение еженедельных данных...');
+
+    try {
+      const existingRes = await fetch(`/api/attendance`);
+      const allRecords = await existingRes.json();
+
+      const selectedDate = new Date(startDate);
+      const dayOfWeek = selectedDate.getDay();
+      const diffToMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+      const monday = new Date(selectedDate);
+      monday.setDate(selectedDate.getDate() - diffToMonday);
+
+      const weekDates: Date[] = [];
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        weekDates.push(d);
+      }
+
+      for (let i = 0; i < 6; i++) {
+        const dateStrWeek = weekDates[i].toISOString().split('T')[0];
+        const dayKey = weekKeys[i];
+
+        const dayRecords = weeklyAttendanceRows.map(row => ({
+          studentId: row.studentId,
+          mark: row.marks[dayKey as keyof typeof row.marks],
+        }));
+
+        const existingRecords = allRecords.filter((item: any) =>
+          String(item.disciplineId) === String(selectedDisciplineId) &&
+          String(item.date) === dateStrWeek
+        );
+
+        if (existingRecords.length > 0) {
+          await Promise.all(
+            existingRecords.map((record: any) =>
+              fetch(`/api/attendance/${record.id}`, { method: 'DELETE' })
+            )
+          );
+        }
+
+        const rowsToSave = dayRecords.filter(row => row.mark !== '-');
+
+        for (const row of rowsToSave) {
+          await fetch('/api/attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              studentId: row.studentId,
+              disciplineId: selectedDisciplineId,
+              date: dateStrWeek,
+              status: row.mark,
+              reason: (row.mark === 'Н' || row.mark === 'У') ? ' ' : '',
+            }),
+          });
+        }
+      }
+
+      setSaveMessage(`✅ Еженедельные данные сохранены!`);
+      setTimeout(() => setSaveMessage(''), 3000);
+
+      await loadData();
+
+    } catch (error) {
+      console.error('❌ Ошибка сохранения:', error);
+      setSaveMessage('❌ Ошибка сохранения');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveMonthly = async () => {
+    if (!selectedDisciplineId) {
+      setSaveMessage('⚠️ Выберите дисциплину');
+      setTimeout(() => setSaveMessage(''), 3000);
+      return;
+    }
+    if (!startDate) {
+      setSaveMessage('⚠️ Выберите дату');
+      setTimeout(() => setSaveMessage(''), 3000);
+      return;
+    }
+
+    setLoading(true);
+    setSaveMessage('⏳ Сохранение ежемесячных данных...');
+
+    try {
+      const existingRes = await fetch(`/api/attendance`);
+      const allRecords = await existingRes.json();
+
+      const currentMonth = startDate.getMonth();
+      const currentYear = startDate.getFullYear();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(currentYear, currentMonth, d);
+        const dateStrMonth = dateObj.toISOString().split('T')[0];
+
+        const dayRecords = monthlyAttendanceRows.map(row => ({
+          studentId: row.studentId,
+          mark: row.marks[d] || '-',
+        }));
+
+        const existingRecords = allRecords.filter((item: any) =>
+          String(item.disciplineId) === String(selectedDisciplineId) &&
+          String(item.date) === dateStrMonth
+        );
+
+        if (existingRecords.length > 0) {
+          await Promise.all(
+            existingRecords.map((record: any) =>
+              fetch(`/api/attendance/${record.id}`, { method: 'DELETE' })
+            )
+          );
+        }
+
+        const rowsToSave = dayRecords.filter(row => row.mark !== '-');
+
+        for (const row of rowsToSave) {
+          await fetch('/api/attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              studentId: row.studentId,
+              disciplineId: selectedDisciplineId,
+              date: dateStrMonth,
+              status: row.mark,
+              reason: (row.mark === 'Н' || row.mark === 'У') ? ' ' : '',
+            }),
+          });
+        }
+      }
+
+      setSaveMessage(`✅ Ежемесячные данные сохранены!`);
+      setTimeout(() => setSaveMessage(''), 3000);
+
+      await loadData();
+
+    } catch (error) {
+      console.error('❌ Ошибка сохранения:', error);
+      setSaveMessage('❌ Ошибка сохранения');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (selectedPeriod === 'daily') {
+      await handleSaveDaily();
+    } else if (selectedPeriod === 'weekly') {
+      await handleSaveWeekly();
+    } else if (selectedPeriod === 'monthly') {
+      await handleSaveMonthly();
+    }
+  };
+
   // ===== ЗАГРУЗКА НАЗВАНИЯ ГРУППЫ =====
   useEffect(() => {
     if (!groupId) return;
@@ -375,10 +756,21 @@ export const TeacherGroups = () => {
     fetchGroup();
   }, [groupId]);
 
-  // ===== ПЕРЕЗАГРУЗКА ПРИ ИЗМЕНЕНИИ ПАРАМЕТРОВ =====
+  // ===== ПЕРЕЗАГРУЗКА =====
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // ===== ДНИ ДЛЯ ЕЖЕМЕСЯЧНОЙ =====
+  const getMonthDays = () => {
+    if (!startDate) return [];
+    const year = startDate.getFullYear();
+    const month = startDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  };
+
+  const monthDays = getMonthDays();
 
   // ===== РЕНДЕР =====
   return (
@@ -465,95 +857,153 @@ export const TeacherGroups = () => {
           )}
         </div>
 
-        {/* ===== ТАБЛИЦА ===== */}
-        <div className={styles.tableContainer}>
-          {/* Шапка таблицы — меняется в зависимости от выбранного периода */}
-          {selectedPeriod === 'daily' && (
-            <div className={styles.tableHeader}>
-              <span className={styles.headerCell}>п/п</span>
-              <span className={styles.headerCell}>ФИО</span>
-              <span className={styles.headerCell}>Отметка</span>
-              <span className={styles.headerCell}>Причина отсутствия</span>
-            </div>
-          )}
-
-          {selectedPeriod === 'weekly' && (
-            <div className={styles.tableHeaderWeekly}>
-              <span className={styles.headerCell}>п/п</span>
-              <span className={styles.headerCell}>ФИО</span>
-              <div className={styles.weekDaysBlock}>
-                {weekDays.map((day) => (
-                  <span key={day} className={styles.weekDayCell}>
-                    {day}
-                  </span>
-                ))}
+        <div className={styles.tableWrapper}>
+          <div className={styles.tableContainer}>
+            {/* ШАПКИ */}
+            {selectedPeriod === 'daily' && (
+              <div className={styles.tableHeader}>
+                <span className={styles.headerCell}>п/п</span>
+                <span className={styles.headerCell}>ФИО</span>
+                <span className={styles.headerCell}>Отметка</span>
+                <span className={styles.headerCell}>Причина отсутствия</span>
               </div>
-            </div>
-          )}
+            )}
 
-          {selectedPeriod === 'monthly' && (
-            <div className={styles.tableHeader}>
-              <span className={styles.headerCell}>п/п</span>
-              <span className={styles.headerCell}>ФИО</span>
-              <span className={styles.headerCell}>Отметка</span>
-              <span className={styles.headerCell}>Причина отсутствия</span>
-            </div>
-          )}
+            {selectedPeriod === 'weekly' && (
+              <div className={styles.tableHeaderWeekly}>
+                <span className={styles.headerCell}>п/п</span>
+                <span className={styles.headerCell}>ФИО</span>
+                <div className={styles.weekDaysBlock}>
+                  {weekDays.map((day) => (
+                    <span key={day} className={styles.weekDayCell}>
+                      {day}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          {/* ===== ТЕЛО ТАБЛИЦЫ (для ежедневной) ===== */}
-          {selectedPeriod === 'daily' && (
-            <div className={styles.tableBody}>
-              {attendanceRows.length === 0 ? (
-                <p className={styles.noData}>Нет данных о студентах</p>
-              ) : (
-                attendanceRows.map((row, index) => {
-                  const isReasonDisabled = row.mark === '-' || row.mark === 'П';
-                  return (
-                    <div key={row.studentId} className={styles.tableRow}>
+            {selectedPeriod === 'monthly' && (
+              <div className={styles.monthlyWrapper}>
+                <table className={styles.monthlyTable}>
+                  <thead>
+                    <tr>
+                      <th>п/п</th>
+                      <th>ФИО</th>
+                      {monthDays.map((day) => (
+                        <th key={day}>{day}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {monthlyAttendanceRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={monthDays.length + 2} className={styles.noData}>
+                          Нет данных о студентах
+                        </td>
+                      </tr>
+                    ) : (
+                      monthlyAttendanceRows.map((row, index) => (
+                        <tr key={row.studentId}>
+                          <td>{index + 1}</td>
+                          <td>{row.fullName}</td>
+                          {monthDays.map((day) => (
+                            <td key={day}>
+                              <select
+                                className={styles.markSelect}
+                                value={row.marks[day] || '-'}
+                                onChange={(e) => handleMonthlyMarkChange(row.studentId, day, e.target.value)}
+                              >
+                                <option value="-">-</option>
+                                <option value="П">П</option>
+                                <option value="У">У</option>
+                                <option value="Н">Н</option>
+                              </select>
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* ТЕЛО ТАБЛИЦ daily и weekly */}
+            {selectedPeriod === 'daily' && (
+              <div className={styles.tableBody}>
+                {attendanceRows.length === 0 ? (
+                  <p className={styles.noData}>Нет данных о студентах</p>
+                ) : (
+                  attendanceRows.map((row, index) => {
+                    const isReasonDisabled = row.mark === '-' || row.mark === 'П';
+                    return (
+                      <div key={row.studentId} className={styles.tableRow}>
+                        <span className={styles.rowCell}>{index + 1}</span>
+                        <span className={styles.rowCell}>{row.fullName}</span>
+                        <div className={styles.rowCell}>
+                          <select
+                            className={styles.markSelect}
+                            value={row.mark}
+                            onChange={(e) => handleMarkChange(row.studentId, e.target.value)}
+                          >
+                            <option value="-">-</option>
+                            <option value="П">П</option>
+                            <option value="У">У</option>
+                            <option value="Н">Н</option>
+                          </select>
+                        </div>
+                        <div className={styles.rowCell}>
+                          <input
+                            type="text"
+                            className={`${styles.reasonInput} ${isReasonDisabled ? styles.reasonDisabled : ''}`}
+                            value={row.reason === '-' ? '' : row.reason}
+                            onChange={(e) => handleReasonChange(row.studentId, e.target.value)}
+                            placeholder={isReasonDisabled ? 'Отметка не выбрана' : 'Введите причину'}
+                            disabled={isReasonDisabled}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {selectedPeriod === 'weekly' && (
+              <div className={styles.tableBody}>
+                {weeklyAttendanceRows.length === 0 ? (
+                  <p className={styles.noData}>Нет данных о студентах</p>
+                ) : (
+                  weeklyAttendanceRows.map((row, index) => (
+                    <div key={row.studentId} className={styles.tableRowWeekly}>
                       <span className={styles.rowCell}>{index + 1}</span>
                       <span className={styles.rowCell}>{row.fullName}</span>
-                      <div className={styles.rowCell}>
-                        <select
-                          className={styles.markSelect}
-                          value={row.mark}
-                          onChange={(e) => handleMarkChange(row.studentId, e.target.value)}
-                        >
-                          <option value="-">-</option>
-                          <option value="П">П</option>
-                          <option value="У">У</option>
-                          <option value="Н">Н</option>
-                        </select>
-                      </div>
-                      <div className={styles.rowCell}>
-                        <input
-                          type="text"
-                          className={`${styles.reasonInput} ${isReasonDisabled ? styles.reasonDisabled : ''}`}
-                          value={row.reason === '-' ? '' : row.reason}
-                          onChange={(e) => handleReasonChange(row.studentId, e.target.value)}
-                          placeholder={isReasonDisabled ? 'Отметка не выбрана' : 'Введите причину'}
-                          disabled={isReasonDisabled}
-                        />
+                      <div className={styles.weekMarksBlock}>
+                        {weekKeys.map((key) => (
+                          <div key={key} className={styles.weekMarkCell}>
+                            <select
+                              className={styles.markSelect}
+                              value={row.marks[key as keyof typeof row.marks]}
+                              onChange={(e) => handleWeeklyMarkChange(row.studentId, key, e.target.value)}
+                            >
+                              <option value="-">-</option>
+                              <option value="П">П</option>
+                              <option value="У">У</option>
+                              <option value="Н">Н</option>
+                            </select>
+                          </div>
+                        ))}
+                        <div className={styles.weekTotalCell}>
+                          <span className={styles.totalText}>{row.total}</span>
+                        </div>
                       </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
-          )}
-
-          {/* ===== ТЕЛО ТАБЛИЦЫ (для еженедельной) ===== */}
-          {selectedPeriod === 'weekly' && (
-            <div className={styles.tableBody}>
-              <p className={styles.noData}>Еженедельная таблица в разработке...</p>
-            </div>
-          )}
-
-          {/* ===== ТЕЛО ТАБЛИЦЫ (для ежемесячной) ===== */}
-          {selectedPeriod === 'monthly' && (
-            <div className={styles.tableBody}>
-              <p className={styles.noData}>Ежемесячная таблица в разработке...</p>
-            </div>
-          )}
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

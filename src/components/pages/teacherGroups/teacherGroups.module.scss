@@ -1,9 +1,8 @@
 .page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #EDEDED;
-  overflow: hidden; /* Оставляем, чтобы хедер был зафиксирован */
 }
 
 .headerWrapper {
@@ -18,12 +17,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* Прокручивается ВСЯ страница */
   padding-bottom: 40px;
   padding-left: 50px;
   padding-right: 50px;
-  padding-top: 20px;
-  gap: 16px; /* Добавляем отступы между блоками */
 }
 
 .leftContent {
@@ -32,7 +28,6 @@
   gap: 16px;
   width: 100%;
   box-sizing: border-box;
-  flex-shrink: 0; /* Не сжимается */
 }
 
 .backBlock {
@@ -99,7 +94,6 @@
   justify-content: space-between;
   padding: 0;
   width: 100%;
-  flex-shrink: 0;
 }
 
 .title {
@@ -189,7 +183,6 @@
   width: 100%;
   gap: 16px;
   box-sizing: border-box;
-  flex-shrink: 0; /* Не сжимается */
 }
 
 .periodSelector {
@@ -474,7 +467,6 @@
   max-width: 500px;
   margin: 0 auto;
   box-sizing: border-box;
-  flex-shrink: 0;
 }
 
 @keyframes slideDown {
@@ -489,6 +481,14 @@
 }
 
 /* ===== ТАБЛИЦА ===== */
+.tableWrapper {
+  width: 100%;
+  overflow: visible;
+  border-radius: 12px;
+  margin-top: 16px;
+  background-color: #323232;
+}
+
 .tableContainer {
   display: flex;
   flex-direction: column;
@@ -496,9 +496,9 @@
   background-color: #323232;
   border-radius: 12px;
   overflow: hidden;
-  flex-shrink: 0; /* Не сжимается, чтобы сохранить размер */
 }
 
+/* ===== ШАПКА ТАБЛИЦЫ (ежедневная/ежемесячная) ===== */
 .tableHeader {
   display: grid;
   grid-template-columns: 80px 1fr 200px 1fr;
@@ -536,39 +536,54 @@
   text-align: center;
 }
 
+/* ===== ШАПКА ДЛЯ ЕЖЕНЕДЕЛЬНОЙ ===== */
+.tableHeaderWeekly {
+  display: grid;
+  grid-template-columns: 80px 300px 1fr;
+  align-items: center;
+  padding: 0 50px;
+  height: 101px;
+  background-color: #323232;
+  box-sizing: border-box;
+  width: 100%;
+  flex-shrink: 0;
+  gap: 20px;
+}
+
+.weekDaysBlock {
+  display: grid;
+  grid-template-columns: repeat(6, 100px) 120px;
+  align-items: center;
+  justify-items: center;
+  padding: 10px 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.weekDayCell {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #FEFEFE;
+  white-space: nowrap;
+  text-align: center;
+  width: 100%;
+}
+
+.weekDayCell:last-child {
+  padding-left: 10px;
+}
+
+/* ===== ТЕЛО ТАБЛИЦЫ ===== */
 .tableBody {
   background-color: #FEFEFE;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  max-height: 500px; /* Ограничиваем высоту для прокрутки */
-  overflow-y: auto;
+  width: 100%;
 }
 
-/* Стилизация скроллбара для таблицы */
-.tableBody::-webkit-scrollbar {
-  width: 10px;
-}
-
-.tableBody::-webkit-scrollbar-track {
-  background: #EDEDED;
-}
-
-.tableBody::-webkit-scrollbar-thumb {
-  background: #8690A2;
-  border-radius: 6px;
-  transition: background 0.3s;
-}
-
-.tableBody::-webkit-scrollbar-thumb:hover {
-  background: #515968;
-}
-
-.tableBody {
-  scrollbar-width: thin;
-  scrollbar-color: #8690A2 #EDEDED;
-}
-
+/* ===== СТРОКИ (ежедневная/ежемесячная) ===== */
 .tableRow {
   display: grid;
   grid-template-columns: 80px 1fr 200px 1fr;
@@ -580,7 +595,7 @@
   width: 100%;
   gap: 20px;
   transition: background-color 0.2s;
-  flex-shrink: 0;
+  background-color: #FEFEFE;
 }
 
 .tableRow:hover {
@@ -613,6 +628,7 @@
   text-align: center;
 }
 
+/* ===== ВЫПАДАЮЩИЙ СПИСОК ОТМЕТОК ===== */
 .markSelect {
   width: 70px;
   padding: 6px 10px;
@@ -637,6 +653,7 @@
   border-color: #323232;
 }
 
+/* ===== ПОЛЕ ПРИЧИНЫ ===== */
 .reasonInput {
   width: 100%;
   max-width: 250px;
@@ -687,184 +704,210 @@
   color: #A99F8D !important;
 }
 
-.noData {
-  font-family: 'Inter', sans-serif;
-  font-size: 18px;
-  color: #8690A2;
-  text-align: center;
-  margin: 0;
-  padding: 40px 0;
-}
-
-.tablePlaceholder {
-  padding: 40px 50px;
-  font-family: 'Inter', sans-serif;
-  font-size: 18px;
-  color: #8690A2;
-  text-align: center;
+/* ===== СТРОКИ ДЛЯ ЕЖЕНЕДЕЛЬНОЙ ===== */
+.tableRowWeekly {
+  display: grid;
+  grid-template-columns: 80px 300px 1fr;
+  align-items: center;
+  padding: 0 50px;
+  min-height: 70px;
+  border-bottom: 1px solid #EDEDED;
+  box-sizing: border-box;
+  width: 100%;
+  gap: 20px;
+  transition: background-color 0.2s;
   background-color: #FEFEFE;
+}
+
+.tableRowWeekly:hover {
+  background-color: #f5f5f5;
+}
+
+.weekMarksBlock {
+  display: grid;
+  grid-template-columns: repeat(6, 100px) 120px;
+  align-items: center;
+  justify-items: center;
+  padding: 10px 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.weekMarkCell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.weekMarkCell .markSelect {
+  width: 80px;
+  padding: 6px 10px;
+  border: 2px solid #A99F8D;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #323232;
+  background-color: #FEFEFE;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: center;
+}
+
+.weekMarkCell .markSelect:hover {
+  border-color: #8690A2;
+}
+
+.weekMarkCell .markSelect:focus {
+  border-color: #323232;
+}
+
+.weekTotalCell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.totalText {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #323232;
+  text-align: center;
+  min-width: 50px;
+}
+
+/* ===== ЕЖЕМЕСЯЧНАЯ ТАБЛИЦА ===== */
+.monthlyWrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
   border-radius: 12px;
-  margin: 0;
-  flex-shrink: 0;
+  background-color: #FEFEFE;
 }
 
-/* Стили для скролла страницы */
-.pageContent::-webkit-scrollbar {
-  width: 12px;
+.monthlyTable {
+  width: 100%;
+  min-width: 1400px;
+  border-collapse: collapse;
+  background-color: #FEFEFE;
 }
 
-.pageContent::-webkit-scrollbar-track {
+.monthlyTable thead th {
+  padding: 12px 8px;
+  background-color: #323232;
+  color: #FEFEFE;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 2px solid #323232;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.monthlyTable thead th:first-child {
+  text-align: left;
+  padding-left: 50px;
+  min-width: 80px;
+}
+
+.monthlyTable thead th:nth-child(2) {
+  text-align: left;
+  padding-left: 20px;
+  min-width: 250px;
+}
+
+.monthlyTable thead th:not(:first-child):not(:nth-child(2)) {
+  min-width: 40px;
+  width: 40px;
+}
+
+.monthlyTable tbody td {
+  padding: 8px 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #323232;
+  text-align: center;
+  border-bottom: 1px solid #EDEDED;
+  background-color: #FEFEFE;
+}
+
+.monthlyTable tbody td:first-child {
+  text-align: left;
+  padding-left: 50px;
+  font-weight: 600;
+}
+
+.monthlyTable tbody td:nth-child(2) {
+  text-align: left;
+  padding-left: 20px;
+}
+
+.monthlyTable tbody tr:hover td {
+  background-color: #f5f5f5;
+}
+
+.monthlyTable tbody td select {
+  width: 36px;
+  padding: 4px 2px;
+  border: 2px solid #A99F8D;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #323232;
+  background-color: #FEFEFE;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: center;
+}
+
+.monthlyTable tbody td select:hover {
+  border-color: #8690A2;
+}
+
+.monthlyTable tbody td select:focus {
+  border-color: #323232;
+}
+
+/* ===== СКРОЛЛБАР ===== */
+.monthlyWrapper::-webkit-scrollbar {
+  height: 12px;
+}
+
+.monthlyWrapper::-webkit-scrollbar-track {
   background: #EDEDED;
-  border-left: 1px solid #A99F8D;
+  border-radius: 6px;
 }
 
-.pageContent::-webkit-scrollbar-thumb {
+.monthlyWrapper::-webkit-scrollbar-thumb {
   background: #8690A2;
   border-radius: 6px;
   border: 2px solid #EDEDED;
   transition: background 0.3s;
 }
 
-.pageContent::-webkit-scrollbar-thumb:hover {
+.monthlyWrapper::-webkit-scrollbar-thumb:hover {
   background: #515968;
 }
 
-.pageContent {
+.monthlyWrapper {
   scrollbar-width: thin;
   scrollbar-color: #8690A2 #EDEDED;
 }
 
-/* Стили для DatePicker */
-:global(.react-datepicker-popper) {
-  animation: slideDown 0.3s ease;
-}
-
-:global(.react-datepicker) {
+.noData {
   font-family: 'Inter', sans-serif;
-  border-radius: 12px;
-  border: 2px solid #A99F8D;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  background-color: #FEFEFE;
-}
-
-:global(.react-datepicker__header) {
-  background-color: #8690A2;
-  border-bottom: 2px solid #A99F8D;
-  border-radius: 12px 12px 0 0;
-  padding-top: 8px;
-}
-
-:global(.react-datepicker__current-month) {
-  color: #FEFEFE;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-:global(.react-datepicker__day-name) {
-  color: #FEFEFE;
-  font-weight: 500;
-}
-
-:global(.react-datepicker__day) {
-  color: #323232;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-}
-
-:global(.react-datepicker__day:hover) {
-  background-color: #8690A2;
-  color: #FEFEFE;
-}
-
-:global(.react-datepicker__day--selected) {
-  background-color: #323232 !important;
-  color: #FEFEFE !important;
-}
-
-:global(.react-datepicker__day--keyboard-selected) {
-  background-color: #515968 !important;
-  color: #FEFEFE !important;
-}
-
-:global(.react-datepicker__navigation) {
-  top: 10px;
-}
-
-:global(.react-datepicker__navigation-icon::before) {
-  border-color: #FEFEFE;
-}
-// ... все предыдущие стили остаются ...
-
-/* ===== ШАПКА ДЛЯ ЕЖЕНЕДЕЛЬНОЙ ===== */
-.tableHeaderWeekly {
-  display: grid;
-  grid-template-columns: 80px 1fr 1fr; /* 80px для п/п, 1fr для ФИО, 1fr для дней недели */
-  align-items: center;
-  padding: 0 50px;
-  height: 101px;
-  background-color: #323232;
-  box-sizing: border-box;
-  width: 100%;
-  flex-shrink: 0;
-  gap: 20px;
-}
-
-.weekDaysBlock {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 39px;
-  padding: 10px;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.weekDayCell {
-  font-family: 'Inter', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: #FEFEFE;
-  white-space: nowrap;
+  font-size: 18px;
+  color: #8690A2;
   text-align: center;
-  min-width: 40px;
+  padding: 40px 0;
 }
-
-/* ===== ОСТАЛЬНЫЕ СТИЛИ ===== */
-.tableHeader {
-  display: grid;
-  grid-template-columns: 80px 1fr 200px 1fr;
-  align-items: center;
-  padding: 0 50px;
-  height: 101px;
-  background-color: #323232;
-  box-sizing: border-box;
-  width: 100%;
-  flex-shrink: 0;
-  gap: 20px;
-}
-
-.headerCell {
-  font-family: 'Inter', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: #FEFEFE;
-  white-space: nowrap;
-}
-
-.headerCell:nth-child(1) {
-  text-align: left;
-}
-
-.headerCell:nth-child(2) {
-  text-align: left;
-}
-
-.headerCell:nth-child(3) {
-  text-align: center;
-}
-
-.headerCell:nth-child(4) {
-  text-align: center;
-}
-
-// ... остальные стили (таблицы, строк, ячеек) остаются без изменений ...
