@@ -172,63 +172,118 @@ export const TeacherGroups = () => {
     return;
   }
 
+  setLoading(true);
   setSaveMessage('⏳ Формируем отчёт...');
 
   try {
+    const year = startDate.getFullYear();
+    const month = String(startDate.getMonth() + 1).padStart(2, '0');
+    const day = String(startDate.getDate()).padStart(2, '0');
+    const currentDateStr = `${year}-${month}-${day}`;
+
+    console.log('📅 Текущая дата:', currentDateStr);
+
     // 1. Загружаем студентов группы
     const studentsRes = await fetch(`/api/students?groupId=${groupId}`);
-    const studentsData: { id: string; fullName: string }[] = await studentsRes.json();
+    const studentsData = await studentsRes.json();
+    console.log('👨‍🎓 Студенты:', studentsData);
 
-    // 2. Загружаем ВСЮ посещаемость и строим словарь { studentId -> { date -> mark } }
+    // 2. Загружаем ВСЮ посещаемость
     const attendanceRes = await fetch('/api/attendance');
-    const allAttendance: any[] = await attendanceRes.json();
+    const allAttendance = await attendanceRes.json();
+    console.log('📋 Вся посещаемость:', allAttendance);
 
-    const recordsMap: Record<string, Record<string, string>> = {};
-    const reasonMap:  Record<string, string> = {};
-
-    for (const item of allAttendance) {
-      const sid = String(item.studentId);
-      if (!recordsMap[sid]) recordsMap[sid] = {};
-      recordsMap[sid][item.date] = item.status;
-      if (item.reason && (item.status === 'Н' || item.status === 'У')) {
-        reasonMap[sid] = item.reason;
-      }
-    }
-
-    // 3. Загружаем дисциплины группы (нужны для ежедневного отчёта)
+    // 3. Загружаем дисциплины группы
     const discRes = await fetch(`/api/disciplines?groupId=${groupId}`);
-    const disciplines: { id: string; name: string }[] = await discRes.json();
+    const disciplines = await discRes.json();
+    console.log('📚 Дисциплины:', disciplines);
 
-    // 4. Формируем массив StudentAttendance
-    const studentAttendance = studentsData.map(s => ({
-      studentId: s.id,
-      fullName:  s.fullName,
-      records:   recordsMap[s.id] || {},
-      reason:    reasonMap[s.id]  || '',
-    }));
+    // 4. Формируем данные для отчета
+    // Для ежедневного отчета: для каждого студента создаем records { disciplineId: mark }
+    const studentAttendance = studentsData.map((s: any) => {
+      const records: Record<string, string> = {};
+      let reason = '';
+
+      // Для каждой дисциплины ищем отметку за текущую дату
+      disciplines.forEach((disc: any) => {
+        const discId = String(disc.id);
+        // Ищем запись для этого студента, дисциплины и даты
+        const found = allAttendance.find((item: any) => {
+          return String(item.studentId) === String(s.id) &&
+                 String(item.disciplineId) === String(disc.id) &&
+                 item.date === currentDateStr;
+        });
+        records[discId] = found ? found.status : '-';
+        if (found && (found.status === 'Н' || found.status === 'У') && !reason) {
+          reason = found.reason || '';
+        }
+      });
+
+      console.log(`📌 Студент ${s.fullName} (${s.id}):`, records);
+      return {
+        studentId: s.id,
+        fullName: s.fullName,
+        records: records,
+        reason: reason,
+      };
+    });
+
+    console.log('📊 Итоговый studentAttendance:', JSON.stringify(studentAttendance, null, 2));
 
     // 5. Генерируем нужный отчёт
     if (selectedPeriod === 'daily') {
       await generateDailyReport(groupName, startDate, studentAttendance, disciplines);
     } else if (selectedPeriod === 'weekly') {
-      // Неделя: от понедельника до воскресенья выбранной даты
+      // Для еженедельного отчета нужна другая структура
+      // records должен быть { date: mark }
+      const weeklyStudentAttendance = studentsData.map((s: any) => {
+        const records: Record<string, string> = {};
+        allAttendance.forEach((item: any) => {
+          if (String(item.studentId) === String(s.id) && 
+              String(item.disciplineId) === String(selectedDisciplineId)) {
+            records[item.date] = item.status;
+          }
+        });
+        return {
+          studentId: s.id,
+          fullName: s.fullName,
+          records: records,
+          reason: '',
+        };
+      });
       const monday = new Date(startDate);
       monday.setDate(startDate.getDate() - ((startDate.getDay() + 6) % 7));
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
-      await generateWeeklyReport(groupName, monday, sunday, studentAttendance);
+      await generateWeeklyReport(groupName, monday, sunday, weeklyStudentAttendance);
     } else {
-      // Месяц
-      await generateMonthlyReport(groupName, startDate, studentAttendance);
+      // Для ежемесячного отчета
+      const monthlyStudentAttendance = studentsData.map((s: any) => {
+        const records: Record<string, string> = {};
+        allAttendance.forEach((item: any) => {
+          if (String(item.studentId) === String(s.id) && 
+              String(item.disciplineId) === String(selectedDisciplineId)) {
+            records[item.date] = item.status;
+          }
+        });
+        return {
+          studentId: s.id,
+          fullName: s.fullName,
+          records: records,
+          reason: '',
+        };
+      });
+      await generateMonthlyReport(groupName, startDate, monthlyStudentAttendance);
     }
 
     setSaveMessage('✅ Отчёт скачан!');
     setTimeout(() => setSaveMessage(''), 3000);
-
   } catch (error) {
     console.error('Ошибка генерации отчёта:', error);
     setSaveMessage('❌ Ошибка при формировании отчёта');
     setTimeout(() => setSaveMessage(''), 3000);
+  } finally {
+    setLoading(false);
   }
 };
 

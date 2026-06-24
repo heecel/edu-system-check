@@ -150,8 +150,7 @@ async function downloadDocx(doc: Document, filename: string): Promise<void> {
 // ─── ЕЖЕДНЕВНЫЙ ОТЧЁТ ────────────────────────────────────────────────────────
 
 export async function generateDailyReport(
-  
-    groupName: string,
+  groupName: string,
   date: Date,
   students: StudentAttendance[],
   disciplines: { id: string; name: string }[],
@@ -238,11 +237,11 @@ export async function generateDailyReport(
               children: [new TextRun({ text: discNames[i] || '', font: FONT, size: 12, color: '000000' })],
             }),
           ],
-        }),
+        })
     ),
   });
 
-  // Создаем строки студентов
+  // Строки студентов с отметками по дисциплинам
   const studentRows = students.map((s, idx) => {
     // Для каждой дисциплины берем свою отметку из s.records
     const markCells = disciplines.slice(0, 8).map((disc, i) => {
@@ -340,143 +339,95 @@ export async function generateWeeklyReport(
   const isoStart = weekStart.toISOString().split('T')[0];
   const isoEnd = weekEnd.toISOString().split('T')[0];
 
+  // Дни недели для шапки
+  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+  // Считаем отметки за каждый день недели
   const counted = students.map((s) => {
-    let total = 0,
-      respectful = 0,
-      disrespectful = 0;
-    for (const [date, mark] of Object.entries(s.records)) {
-      if (date >= isoStart && date <= isoEnd) {
-        if (mark === 'Н') {
+    const marks: Record<string, string> = {};
+    let total = 0;
+
+    // Для каждого дня недели
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(weekStart);
+      date.setDate(weekStart.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Ищем отметку за этот день
+      // Если есть запись, берем статус, иначе "-"
+      if (dateStr >= isoStart && dateStr <= isoEnd) {
+        const mark = s.records[dateStr] || '-';
+        marks[`day${i}`] = mark;
+        if (mark === 'Н' || mark === 'У') {
           total++;
-          disrespectful++;
         }
-        if (mark === 'У') {
-          total++;
-          respectful++;
-        }
+      } else {
+        marks[`day${i}`] = '-';
       }
     }
-    return { ...s, total, respectful, disrespectful };
+
+    return {
+      ...s,
+      marks,
+      total,
+    };
   });
 
-  const W = {
-    num: 400,
-    name: 2200,
-    total: 480,
-    resp: 700,
-    nresp: 700,
-    talk: 900,
-    phone: 600,
-    face: 600,
-    letter: 900,
-    council: 700,
-    psych: 1000,
-    head: 800,
-    headMark: 1000,
-    direction: 1000,
-  };
-  const allWidths = Object.values(W);
+  // Ширины столбцов
+  const COL_NUM = 80;
+  const COL_NAME = 400;
+  const COL_DAY = 100;
+  const COL_TOTAL = 80;
 
-  const headerRow1 = new TableRow({
+  // Заголовки
+  const headerCells = [
+    cellCenter('п/п', COL_NUM, 14, true),
+    cellCenter('ФИО', COL_NAME, 14, true),
+    ...weekDays.map((day) => cellCenter(day, COL_DAY, 14, true)),
+    cellCenter('Итого', COL_TOTAL, 14, true),
+  ];
+
+  const headerRow = new TableRow({
     tableHeader: true,
-    children: [
-      makeHeaderCell('№\nп/п', W.num, 2),
-      makeHeaderCell('Ф. И.\nобучающегося', W.name, 2),
-      makeHeaderCell('Число', W.total + W.resp + W.nresp, 1),
-      new TableCell({
-        width: { size: W.talk + W.phone + W.face + W.letter, type: WidthType.DXA },
-        borders: allBorders,
-        columnSpan: 4,
-        margins: { top: 40, bottom: 40, left: 40, right: 40 },
-        verticalAlign: VerticalAlign.CENTER,
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [run('Работа с родителями', 12)] })],
-      }),
-      new TableCell({
-        width: { size: W.council + W.psych + W.head, type: WidthType.DXA },
-        borders: allBorders,
-        columnSpan: 3,
-        margins: { top: 40, bottom: 40, left: 40, right: 40 },
-        verticalAlign: VerticalAlign.CENTER,
-        children: [
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [run('Направлено ходатайство для проведения профилактической работы', 12)],
-          }),
-        ],
-      }),
-      makeHeaderCell(
-        'Отметка заведующей отделением о направлении студента на Совет профилактики',
-        W.headMark + W.direction,
-        1,
-      ),
-    ],
+    height: { value: 400, rule: 'exact' },
+    children: headerCells,
   });
 
-  const headerRow2 = new TableRow({
-    tableHeader: true,
-    children: [
-      makeHeaderCell('Всего', W.total),
-      makeHeaderCell('Уважи-тельные', W.resp),
-      makeHeaderCell('Неуважи-тельные', W.nresp),
-      makeHeaderCell('Беседа со студентом', W.talk),
-      makeHeaderCell('телеф. звонок', W.phone),
-      makeHeaderCell('личная беседа', W.face),
-      makeHeaderCell('письменное уведомление', W.letter),
-      makeHeaderCell('в студенческий Совет', W.council),
-      makeHeaderCell('в социально-психологическую службу', W.psych),
-      makeHeaderCell('заведующей отделением', W.head),
-      makeHeaderCell('заведующей отделением', W.headMark),
-      makeHeaderCell('направлении студента на Совет профилактики', W.direction),
-    ],
+  // Строки студентов
+  const studentRows = counted.map((s, idx) => {
+    const rowCells = [
+      cellCenter(String(idx + 1), COL_NUM, 14),
+      cellLeft(s.fullName, COL_NAME, 14),
+      ...weekDays.map((_, i) => {
+        const mark = s.marks[`day${i}`] || '-';
+        return cellCenter(mark, COL_DAY, 14);
+      }),
+      cellCenter(String(s.total), COL_TOTAL, 14, true),
+    ];
+
+    return new TableRow({
+      height: { value: 350, rule: 'exact' },
+      children: rowCells,
+    });
   });
 
-  const studentRows = counted.map((s, idx) =>
-    new TableRow({
-      children: [
-        cellCenter(String(idx + 1), W.num, 16),
-        cellLeft(s.fullName, W.name, 16),
-        cellCenter(s.total > 0 ? String(s.total) : '', W.total, 16),
-        cellCenter(s.respectful > 0 ? String(s.respectful) : '', W.resp, 16),
-        cellCenter(s.disrespectful > 0 ? String(s.disrespectful) : '', W.nresp, 16),
-        emptyCell(W.talk),
-        emptyCell(W.phone),
-        emptyCell(W.face),
-        emptyCell(W.letter),
-        emptyCell(W.council),
-        emptyCell(W.psych),
-        emptyCell(W.head),
-        emptyCell(W.headMark),
-        emptyCell(W.direction),
-      ],
-    }),
-  );
-
-  const totalAll = counted.reduce((a, s) => a + s.total, 0);
-  const totalR = counted.reduce((a, s) => a + s.respectful, 0);
-  const totalNR = counted.reduce((a, s) => a + s.disrespectful, 0);
+  // Итого строка
+  const totalAll = counted.reduce((sum, s) => sum + s.total, 0);
+  const totalRowCells = [
+    cellCenter('Итого', COL_NUM + COL_NAME, 14, true),
+    ...weekDays.map(() => emptyCell(COL_DAY)),
+    cellCenter(String(totalAll), COL_TOTAL, 14, true),
+  ];
 
   const totalRow = new TableRow({
-    children: [
-      cellCenter('Итого', W.num + W.name, 16, true),
-      cellCenter(totalAll > 0 ? String(totalAll) : '', W.total, 16),
-      cellCenter(totalR > 0 ? String(totalR) : '', W.resp, 16),
-      cellCenter(totalNR > 0 ? String(totalNR) : '', W.nresp, 16),
-      emptyCell(W.talk),
-      emptyCell(W.phone),
-      emptyCell(W.face),
-      emptyCell(W.letter),
-      emptyCell(W.council),
-      emptyCell(W.psych),
-      emptyCell(W.head),
-      emptyCell(W.headMark),
-      emptyCell(W.direction),
-    ],
+    height: { value: 350, rule: 'exact' },
+    children: totalRowCells,
   });
 
   const table = new Table({
-    width: { size: allWidths.reduce((a, b) => a + b, 0), type: WidthType.DXA },
-    columnWidths: allWidths,
-    rows: [headerRow1, headerRow2, ...studentRows, totalRow],
+    width: { size: COL_NUM + COL_NAME + COL_DAY * 6 + COL_TOTAL, type: WidthType.DXA },
+    columnWidths: [COL_NUM, COL_NAME, ...Array(6).fill(COL_DAY), COL_TOTAL],
+    rows: [headerRow, ...studentRows, totalRow],
   });
 
   const doc = new Document({
@@ -501,18 +452,18 @@ export async function generateWeeklyReport(
             16,
             true,
           ),
-          new Paragraph({ spacing: { after: 0, line: 240 }, children: [] }),
-          table,
-          new Paragraph({ spacing: { after: 0, line: 240 }, children: [] }),
           new Paragraph({
             spacing: { after: 0, line: 240 },
             children: [
               run(
-                `«${String(weekStart.getDate()).padStart(2, '0')}» ${MONTHS_RU[weekStart.getMonth()]} ${weekStart.getFullYear()} г.`,
+                `за неделю с «${String(weekStart.getDate()).padStart(2, '0')}» ${MONTHS_RU[weekStart.getMonth()]} по «${String(weekEnd.getDate()).padStart(2, '0')}» ${MONTHS_RU[weekEnd.getMonth()]} ${weekStart.getFullYear()} г.`,
                 16,
               ),
             ],
           }),
+          new Paragraph({ spacing: { after: 0, line: 240 }, children: [] }),
+          table,
+          new Paragraph({ spacing: { after: 0, line: 240 }, children: [] }),
           new Paragraph({ spacing: { after: 0, line: 240 }, children: [] }),
           leftParagraph('Классный руководитель ___________________ Граков Д. В.', 16),
           leftParagraph('Староста группы      ___________________ Гойкина И. В.', 16),
@@ -623,7 +574,7 @@ export async function generateMonthlyReport(
                 children: [new TextRun({ text: String(i + 1), font: FONT, size: 10, color: '000000' })],
               }),
             ],
-          }),
+          })
       ),
       mkHeader('Беседа со студентом', COL_TALK),
       mkHeader('телеф. звонок', COL_PHONE),
